@@ -1,0 +1,10 @@
+
+  @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap');
+
+
+*{
+    max-width: 1440px;
+    margin: 0% auto;
+    font-family: 'Ubuntu', sans-serif;
+    box-sizing: border-box;
+}

@@ -1,0 +1,63 @@
+.footer{
+background-color: rgb(0, 36, 43);
+color: white;
+display: flex;
+justify-content: space-around;
+padding: 100px;
+height: 100%;
+}
+.left{
+    border: 2px solid white;
+    padding: 80px;
+    width: 40%;
+}
+
+.Footer{
+    margin-bottom: 50px;
+    position: relative;
+}
+.Footer::after{
+    content: " ";
+    height: 5px;
+    border-radius: 50px;
+    width: 15%;
+    background: red;
+    position: absolute;
+    left: 0%;
+    bottom: 60%;
+    
+}
+.Footer h1{
+    margin-bottom: 40px;
+}
+.phonenumber{
+    margin-bottom: 40px;
+    font-size: larger;
+}
+.email{
+    margin-bottom: 40px;
+    font-size: larger;
+}
+.location{
+    margin-bottom: 40px;
+    font-size: larger;
+}
+.socialhandles{
+    color: red;
+    margin-bottom: 40px;
+    font-size: large;
+}
+.FootBanner{
+background-color: gainsboro;
+height: 100%;
+padding-left: 12%;
+}
+.icon{
+    display: flex;
+    height: 50px;
+    width: 345px;
+    
+}
+.icon img{
+    margin: 4px;
+}

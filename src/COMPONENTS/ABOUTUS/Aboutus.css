@@ -1,0 +1,53 @@
+.heading{    
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+.heading::after{
+    content: " ";
+    height: 2px;
+    width: 4%;
+    background: red;
+    position: absolute;
+    left: 39%;
+    bottom: 42%;
+}
+.heading::before{
+    content: " ";
+    height: 2px;
+    width: 4%;
+    background: red;
+    position: absolute;
+    left: 57%;
+    bottom: 42%;
+}
+.content{
+    max-width: 1110px;
+    margin: 0% auto;
+
+}
+.sub-content{
+    margin-top: 20px;
+    margin-bottom: 40px ;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+.head{
+    font-size: 25px;
+    position: relative;
+    margin-top: 10px;
+    margin-bottom: 10px;
+   /* text-decoration: underline red; */
+}
+.head::after{
+    content: " ";
+    height: 2px;
+    width: 5%;
+    background: red;
+    position: absolute;
+    left: 0%;
+    bottom: -25%;
+    
+}
+h4{
+    margin-top: 20px;
+}
