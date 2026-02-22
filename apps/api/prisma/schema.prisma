@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleType {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  DONE
+  FAILED
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String
+  suspendedAt  DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  roles        Role[]
+  workspaces   Workspace[] @relation("WorkspaceOwner")
+}
+
+model Workspace {
+  id                  String             @id @default(cuid())
+  name                String
+  ownerId             String
+  removeBranding      Boolean            @default(false)
+  customDomain        String?            @unique
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  owner               User               @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  instagramAccounts   InstagramAccount[]
+  triggers            Trigger[]
+  webhookLogs         WebhookLog[]
+  jobs                Job[]
+  clickEvents         ClickEvent[]
+  analyticsAggregates AnalyticsAggregate[]
+  theme               Theme?
+  subscriptions       Subscription[]
+  roles               Role[]
+
+  @@index([ownerId])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        RoleType
+  user        User     @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId, role])
+}
+
+model InstagramAccount {
+  id                String      @id @default(cuid())
+  workspaceId       String
+  igUserId          String      @unique
+  username          String
+  status            String      @default("ACTIVE")
+  lastDmAt          DateTime?
+  createdAt         DateTime    @default(now())
+  workspace         Workspace   @relation(fields: [workspaceId], references: [id])
+  tokens            Token[]
+  triggers          Trigger[]
+  jobs              Job[]
+  webhookLogs       WebhookLog[]
+
+  @@index([workspaceId, status])
+}
+
+model Token {
+  id                 String            @id @default(cuid())
+  instagramAccountId String
+  encryptedAccess    String
+  expiresAt          DateTime
+  createdAt          DateTime          @default(now())
+  instagramAccount   InstagramAccount  @relation(fields: [instagramAccountId], references: [id])
+
+  @@index([instagramAccountId, expiresAt])
+}
+
+model Trigger {
+  id                 String             @id @default(cuid())
+  workspaceId        String
+  instagramAccountId String
+  name               String
+  keyword            String
+  scope              String
+  sourceRef          String?
+  template           String
+  priority           Int                @default(100)
+  enabled            Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  workspace          Workspace          @relation(fields: [workspaceId], references: [id])
+  instagramAccount   InstagramAccount   @relation(fields: [instagramAccountId], references: [id])
+  triggerSteps       TriggerStep[]
+  clickEvents        ClickEvent[]
+
+  @@index([instagramAccountId, enabled, priority])
+  @@index([workspaceId, scope])
+}
+
+model TriggerStep {
+  id          String   @id @default(cuid())
+  triggerId   String
+  stepOrder   Int
+  delayHours  Int      @default(0)
+  delayDays   Int      @default(0)
+  message     String
+  trigger     Trigger  @relation(fields: [triggerId], references: [id])
+
+  @@unique([triggerId, stepOrder])
+}
+
+model WebhookLog {
+  id                 String            @id @default(cuid())
+  workspaceId        String
+  instagramAccountId String?
+  topic              String
+  payload            Json
+  signatureValid     Boolean
+  error              String?
+  createdAt          DateTime          @default(now())
+  workspace          Workspace         @relation(fields: [workspaceId], references: [id])
+  instagramAccount   InstagramAccount? @relation(fields: [instagramAccountId], references: [id])
+
+  @@index([workspaceId, createdAt])
+  @@index([topic, signatureValid])
+}
+
+model Job {
+  id                 String            @id @default(cuid())
+  workspaceId        String
+  instagramAccountId String
+  bullJobId          String
+  type               String
+  status             JobStatus         @default(QUEUED)
+  payload            Json
+  attempts           Int               @default(0)
+  lastError          String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  workspace          Workspace         @relation(fields: [workspaceId], references: [id])
+  instagramAccount   InstagramAccount  @relation(fields: [instagramAccountId], references: [id])
+
+  @@index([instagramAccountId, status, createdAt])
+}
+
+model ClickEvent {
+  id                 String    @id @default(cuid())
+  workspaceId        String
+  accountId          String
+  triggerId          String
+  shortCode          String
+  destinationUrl     String
+  ipHash             String
+  userAgent          String
+  createdAt          DateTime  @default(now())
+  workspace          Workspace @relation(fields: [workspaceId], references: [id])
+  trigger            Trigger   @relation(fields: [triggerId], references: [id])
+
+  @@index([workspaceId, createdAt])
+  @@index([shortCode])
+}
+
+model AnalyticsAggregate {
+  id              String    @id @default(cuid())
+  workspaceId     String
+  dateBucket      DateTime
+  totalClicks     Int       @default(0)
+  totalDmSent     Int       @default(0)
+  conversions     Int       @default(0)
+  topTriggerId    String?
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceId, dateBucket])
+}
+
+model Theme {
+  id              String    @id @default(cuid())
+  workspaceId     String    @unique
+  logoUrl         String?
+  primaryColor    String    @default("#4f46e5")
+  customCss       String?
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+model Subscription {
+  id              String    @id @default(cuid())
+  workspaceId     String
+  plan            String
+  status          String
+  renewsAt        DateTime?
+  createdAt       DateTime  @default(now())
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@index([workspaceId, status])
+}
